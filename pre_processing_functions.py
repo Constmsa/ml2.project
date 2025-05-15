@@ -1,6 +1,13 @@
 import pandas as pd
 from datetime import datetime
 
+def load_basket(filepath):
+    basket = pd.read_csv(filepath)
+    return basket
+
+def load_info(filepath):
+    info = pd.read_csv(filepath)
+    return info
 
 def feature_transformation(customer_info):
     #Gender mapping
@@ -40,3 +47,86 @@ def feature_transformation(customer_info):
     customer_info.drop(columns='customer_name_clean', inplace=True)
 
     return customer_info
+
+def missing_values(df, strategy='median'):
+    handled_missing = df.copy()
+    
+    # create new df for numeric and categorical columns
+    num_cols = df.select_dtypes(include=['number']).columns
+    cat_cols = df.select_dtypes(include=['object', 'category', 'bool']).columns
+
+    # Use simple imputer to impute numeric columns by median
+    if len(num_cols) > 0:
+        num_imputer = SimpleImputer(strategy= 'median')
+        handled_missing[num_cols] = num_imputer.fit_transform(df[num_cols])
+    
+    # Use simple imputer to impute categorical columns by most frequent
+    if len(cat_cols) > 0:
+        cat_imputer = SimpleImputer(strategy= 'most frequent')
+        handled_missing[cat_cols] = cat_imputer.fit_transform(df[cat_cols])
+
+    return handled_missing
+
+
+def scalling(df, scaler = 'robust'):
+    if scaler == 'minmax':
+        scaler = MinMaxScaler()
+    elif scaler == 'robust':
+        scaler = RobustScaler()
+    else:     
+        scaler = StandardScaler()
+    df_scaled = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
+    return df_scaled
+
+
+def preprocess(path):
+    df = load_info(path)
+    df = feature_transformation(df)
+    df = missing_values(df)
+    df = scalling(df)
+    return df
+
+def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):
+    df = preprocess(path)
+    original_features = df.columns.tolist()
+
+    result_dict = {feature: False for feature in original_features} 
+
+    if method == "variance":
+        selected_features = df.columns[VarianceThreshold(threshold=threshold).fit(df).get_support()]
+        result_dict.update({f: True for f in selected_features})
+        return pd.Series(result_dict, name="Keep (Variance)")
+    
+    elif method == 'correlation':
+        corr_matrix = df.corr().abs()
+        to_drop = set()
+
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i + 1, len(corr_matrix.columns)):
+                col1 = corr_matrix.columns[i]
+                col2 = corr_matrix.columns[j]
+                if corr_matrix.iloc[i, j] > correlation_threshold:
+                    to_drop.add(col2)  
+        df_selected = df.drop(columns=list(to_drop))
+        for f in df.columns:
+            result_dict[f] = f not in to_drop
+        return pd.Series(result_dict, name="Keep (Correlation)")
+
+    elif method == "pca":
+        pca = PCA(n_components=n_components)
+        pca.fit(df)
+        matrix = pd.DataFrame(pca.components_.T, index=df.columns, columns=[f"PC{i+1}" for i in range(n_components)])
+        
+        # A feature is important if it contributes highly to a PC
+        importance_threshold = 0.3 
+        important_features = set()
+
+        for col in matrix.columns:
+            important_features.update(matrix[matrix[col].abs() >= importance_threshold].index.tolist())
+
+        for f in df.columns:
+            result_dict[f] = f in important_features
+        return pd.Series(result_dict, name="Important in PCA")
+
+    else:
+        raise ValueError("Choose method from 'variance', 'correlation', or 'pca'")

@@ -1,5 +1,11 @@
 import pandas as pd
 from datetime import datetime
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import RobustScaler  
+from sklearn.impute import KNNImputer, SimpleImputer 
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.decomposition import PCA
 
 def load_basket(filepath):
     basket = pd.read_csv(filepath)
@@ -48,7 +54,7 @@ def feature_transformation(customer_info):
 
     return customer_info
 
-def missing_values(df, strategy='median'):
+def missing_values(df, n_neighbors=5):
     handled_missing = df.copy()
     
     # create new df for numeric and categorical columns
@@ -57,7 +63,7 @@ def missing_values(df, strategy='median'):
 
     # Use simple imputer to impute numeric columns by median
     if len(num_cols) > 0:
-        num_imputer = SimpleImputer(strategy= 'median')
+        num_imputer = KNNImputer(n_neighbors=n_neighbors)
         handled_missing[num_cols] = num_imputer.fit_transform(df[num_cols])
     
     # Use simple imputer to impute categorical columns by most frequent

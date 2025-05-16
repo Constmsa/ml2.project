@@ -1,9 +1,14 @@
-import pandas as pd
 from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler  
+<<<<<<< HEAD
 from sklearn.impute import KNNImputer, SimpleImputer 
+=======
+from sklearn.impute import SimpleImputer 
+import pandas as pd
+import numpy as np
+>>>>>>> a73566b3901dfbe8aa8a51a8d67ff74df4273387
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
 

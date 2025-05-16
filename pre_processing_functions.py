@@ -1,5 +1,12 @@
-import pandas as pd
 from datetime import datetime
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import RobustScaler  
+from sklearn.impute import SimpleImputer 
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.decomposition import PCA
 
 def load_basket(filepath):
     basket = pd.read_csv(filepath)

@@ -70,11 +70,13 @@ def missing_values(df, n_neighbors=5):
     
     # Use simple imputer to impute categorical columns by most frequent
     if len(cat_cols) > 0:
-        cat_imputer = SimpleImputer(strategy= 'most frequent')
+        cat_imputer = SimpleImputer(strategy= 'most_frequent')
         handled_missing[cat_cols] = cat_imputer.fit_transform(df[cat_cols])
 
     return handled_missing
 
+def encoding(df):
+    return df
 
 def scalling(df, scaler = 'robust'):
     if scaler == 'minmax':
@@ -91,7 +93,8 @@ def preprocess(path):
     df = load_info(path)
     df = feature_transformation(df)
     df = missing_values(df)
-    df = scalling(df)
+    #df = encoding(df)
+    #df = scalling(df)
     return df
 
 def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):

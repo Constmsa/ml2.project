@@ -1,6 +1,4 @@
 from datetime import datetime
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import RobustScaler  
 from sklearn.impute import KNNImputer, SimpleImputer 
 from sklearn.impute import SimpleImputer 
@@ -8,6 +6,8 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import OrdinalEncoder
+
 
 def load_basket(filepath):
     basket = pd.read_csv(filepath)
@@ -61,7 +61,7 @@ def missing_values(df, n_neighbors=5):
     
     # create new df for numeric and categorical columns
     num_cols = df.select_dtypes(include=['number']).columns
-    cat_cols = df.select_dtypes(include=['object', 'category', 'bool']).columns
+    cat_cols = df.select_dtypes(include=['object', 'category']).columns
 
     # Use simple imputer to impute numeric columns by median
     if len(num_cols) > 0:
@@ -76,16 +76,22 @@ def missing_values(df, n_neighbors=5):
     return handled_missing
 
 def encoding(df):
-    return df
+    df_encoded = df.copy()
+    # select categorical columns
+    cat_cols = df_encoded.select_dtypes(include=['object', 'category']).columns
+    # Ordinal encoding- keeps dimensionality low and keeps distance meaningfull for knn
+    encoder = OrdinalEncoder()
+    df_encoded[cat_cols] = encoder.fit_transform(df_encoded[cat_cols])
+    
+    return df_encoded
 
-def scalling(df, scaler = 'robust'):
-    if scaler == 'minmax':
-        scaler = MinMaxScaler()
-    elif scaler == 'robust':
-        scaler = RobustScaler()
-    else:     
-        scaler = StandardScaler()
-    df_scaled = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
+def scaling(df):
+    df_scaled = df.copy()
+    # select numeric columns
+    num_cols = df_scaled.select_dtypes(include=['number']).columns
+    # Scale only numeric columns
+    scaler_ = RobustScaler()
+    df_scaled[num_cols] = scaler_.fit_transform(df_scaled[num_cols])
     return df_scaled
 
 
@@ -93,8 +99,8 @@ def preprocess(path):
     df = load_info(path)
     df = feature_transformation(df)
     df = missing_values(df)
-    #df = encoding(df)
-    #df = scalling(df)
+    df = encoding(df)
+    df = scaling(df)
     return df
 
 def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):

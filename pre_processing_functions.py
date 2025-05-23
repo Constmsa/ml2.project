@@ -75,6 +75,28 @@ def missing_values(df, n_neighbors=5):
 
     return handled_missing
 
+def manual_outliers(df):
+    manual_thresholds = {
+        'lifetime_spend_groceries': 140000,
+        'lifetime_spend_electronics': 30000,
+        'lifetime_spend_vegetables': 4000,
+        'lifetime_spend_nonalcohol_drinks': 1600,
+        'lifetime_spend_alcohol_drinks': 4000,
+        'lifetime_spend_meat': 2800,
+        'lifetime_spend_fish': 3600,
+        'lifetime_spend_hygiene': 3000,
+        'lifetime_spend_videogames': 2000,
+        'lifetime_spend_petfood': 900,
+        'lifetime_total_distinct_products': 800,
+    }
+
+    for col, threshold in manual_thresholds.items():
+        df[col] = df[col].clip(upper=threshold)
+    
+    df['percentage_of_products_bought_promotion'] = df['percentage_of_products_bought_promotion'].clip(lower=0)
+    
+    return(df)
+
 def encoding(df):
     df_encoded = df.copy()
     # select categorical columns
@@ -99,8 +121,10 @@ def preprocess(path):
     df = load_info(path)
     df = feature_transformation(df)
     df = missing_values(df)
+    df = manual_outliers(df)
     df = encoding(df)
     df = scaling(df)
+    #df = multidimensional_outliers(df)
     return df
 
 def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):

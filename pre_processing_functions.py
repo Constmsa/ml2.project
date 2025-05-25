@@ -56,6 +56,9 @@ def feature_transformation(customer_info):
     customer_info['customer_name'] = customer_info['customer_name_clean']
     customer_info.drop(columns='customer_name_clean', inplace=True)
 
+    #drop column Unnamed: 0, customer_birthdate
+    df = df.drop(columns=['Unnamed: 0', 'customer_birthdate'])
+    
     return customer_info
 
 def missing_values(df, n_neighbors=5):
@@ -124,9 +127,9 @@ def multidimensional_outliers(df):
     # Add results to DataFrame and remove said outliers
     df['dbscan_label'] = labels
     df['is_outlier'] = (labels == -1)
-    df = df[df['is_outlier'] == False].copy()
+    df_clean = df[df['is_outlier'] == False].copy().drop(columns=['dbscan_label', 'is_outlier'])
 
-    return df
+    return df_clean
 
 def encoding(df):
     df_encoded = df.copy()

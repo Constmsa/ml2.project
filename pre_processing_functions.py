@@ -7,6 +7,8 @@ import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 
 def load_basket(filepath):
@@ -97,6 +99,35 @@ def manual_outliers(df):
     
     return(df)
 
+def multidimensional_outliers(df):
+    
+    #features we selected for DBSCAN
+    features = [
+    'lifetime_spend_groceries',
+    'lifetime_spend_electronics',
+    'lifetime_spend_meat',
+    'lifetime_total_distinct_products',
+    'percentage_of_products_bought_promotion',
+    'lifetime_spend_alcohol_drinks',
+    'number_complaints',
+    'distinct_stores_visited',
+    'typical_hour'
+    ]
+
+    # Standardize the selected features
+    X_scaled = StandardScaler().fit_transform(df[features])
+
+    # Apply DBSCAN
+    dbscan = DBSCAN(eps=1.5, min_samples=5)
+    labels = dbscan.fit_predict(X_scaled)
+
+    # Add results to DataFrame and remove said outliers
+    df['dbscan_label'] = labels
+    df['is_outlier'] = (labels == -1)
+    df = df[df['is_outlier'] == False].copy()
+
+    return df
+
 def encoding(df):
     df_encoded = df.copy()
     # select categorical columns
@@ -122,9 +153,10 @@ def preprocess(path):
     df = feature_transformation(df)
     df = missing_values(df)
     df = manual_outliers(df)
+    df = multidimensional_outliers(df)
     df = encoding(df)
     df = scaling(df)
-    #df = multidimensional_outliers(df)
+    
     return df
 
 def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):

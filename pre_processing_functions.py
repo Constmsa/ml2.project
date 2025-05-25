@@ -57,7 +57,7 @@ def feature_transformation(customer_info):
     customer_info.drop(columns='customer_name_clean', inplace=True)
 
     #drop column Unnamed: 0, customer_birthdate
-    df = df.drop(columns=['Unnamed: 0', 'customer_birthdate'])
+    customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate'])
     
     return customer_info
 

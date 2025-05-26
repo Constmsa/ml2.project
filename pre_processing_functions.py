@@ -7,6 +7,8 @@ import numpy as np
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.cluster import DBSCAN
+from sklearn.preprocessing import StandardScaler
 
 
 def load_basket(filepath):
@@ -54,6 +56,9 @@ def feature_transformation(customer_info):
     customer_info['customer_name'] = customer_info['customer_name_clean']
     customer_info.drop(columns='customer_name_clean', inplace=True)
 
+    #drop column Unnamed: 0, customer_birthdate
+    customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate'])
+    
     return customer_info
 
 def missing_values(df, n_neighbors=5):
@@ -74,6 +79,57 @@ def missing_values(df, n_neighbors=5):
         handled_missing[cat_cols] = cat_imputer.fit_transform(df[cat_cols])
 
     return handled_missing
+
+def manual_outliers(df):
+    manual_thresholds = {
+        'lifetime_spend_groceries': 140000,
+        'lifetime_spend_electronics': 30000,
+        'lifetime_spend_vegetables': 4000,
+        'lifetime_spend_nonalcohol_drinks': 1600,
+        'lifetime_spend_alcohol_drinks': 4000,
+        'lifetime_spend_meat': 2800,
+        'lifetime_spend_fish': 3600,
+        'lifetime_spend_hygiene': 3000,
+        'lifetime_spend_videogames': 2000,
+        'lifetime_spend_petfood': 900,
+        'lifetime_total_distinct_products': 800,
+    }
+
+    for col, threshold in manual_thresholds.items():
+        df[col] = df[col].clip(upper=threshold)
+    
+    df['percentage_of_products_bought_promotion'] = df['percentage_of_products_bought_promotion'].clip(lower=0)
+    
+    return(df)
+
+def multidimensional_outliers(df):
+    
+    #features we selected for DBSCAN
+    features = [
+    'lifetime_spend_groceries',
+    'lifetime_spend_electronics',
+    'lifetime_spend_meat',
+    'lifetime_total_distinct_products',
+    'percentage_of_products_bought_promotion',
+    'lifetime_spend_alcohol_drinks',
+    'number_complaints',
+    'distinct_stores_visited',
+    'typical_hour'
+    ]
+
+    # Standardize the selected features
+    X_scaled = StandardScaler().fit_transform(df[features])
+
+    # Apply DBSCAN
+    dbscan = DBSCAN(eps=1.5, min_samples=5)
+    labels = dbscan.fit_predict(X_scaled)
+
+    # Add results to DataFrame and remove said outliers
+    df['dbscan_label'] = labels
+    df['is_outlier'] = (labels == -1)
+    df_clean = df[df['is_outlier'] == False].copy().drop(columns=['dbscan_label', 'is_outlier'])
+
+    return df_clean
 
 def encoding(df):
     df_encoded = df.copy()
@@ -99,8 +155,11 @@ def preprocess(path):
     df = load_info(path)
     df = feature_transformation(df)
     df = missing_values(df)
+    df = manual_outliers(df)
+    df = multidimensional_outliers(df)
     df = encoding(df)
     df = scaling(df)
+    
     return df
 
 def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):

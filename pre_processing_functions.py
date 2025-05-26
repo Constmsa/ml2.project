@@ -157,8 +157,8 @@ def preprocess(path):
     df = missing_values(df)
     df = manual_outliers(df)
     df = multidimensional_outliers(df)
-    df = encoding(df)
-    df = scaling(df)
+    #df = encoding(df)
+    #df = scaling(df)
     
     return df
 

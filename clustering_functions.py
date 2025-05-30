@@ -6,12 +6,17 @@ from pre_processing_functions import preprocess
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 
-def som_cluster(df, features, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
+def som_cluster(path, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
    
-    df = df.copy()
+    df = preprocess(path) 
     
     # 1. Extract features
-    X = df[features].values
+    X = df[['lifetime_spend_groceries', 'lifetime_spend_electronics',
+        'typical_hour', 'lifetime_spend_vegetables',
+        'lifetime_spend_nonalcohol_drinks', 'lifetime_spend_alcohol_drinks',
+        'lifetime_spend_meat', 'lifetime_spend_fish', 'lifetime_spend_hygiene',
+        'lifetime_spend_videogames', 'lifetime_spend_petfood',
+        'lifetime_total_distinct_products']]
 
     # 2. Initialize and train SOM
     som = MiniSom(x=som_size,
@@ -64,3 +69,10 @@ def hierarchical_clustering(path, n_clusters= 9, linkage= 'ward') :
     data_with_clusters['hierarchical_cluster'] = cluster_labels
 
     return data_with_clusters
+
+def clustering(path):
+    df = som_cluster(path)
+    df[kmeans_clustering] = kmeans_clustering(path)['Kmeans_cluster']
+    df[hierarchical_clustering] = hierarchical_clustering(path)['hierarchical_cluster']
+
+    return df

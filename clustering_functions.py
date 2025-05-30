@@ -6,17 +6,16 @@ from pre_processing_functions import preprocess
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 
-def som_cluster(path, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
-   
-    df = preprocess(path) 
-    
+
+def som_cluster(df, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
+    df = df.copy()
     # 1. Extract features
     X = df[['lifetime_spend_groceries', 'lifetime_spend_electronics',
         'typical_hour', 'lifetime_spend_vegetables',
         'lifetime_spend_nonalcohol_drinks', 'lifetime_spend_alcohol_drinks',
         'lifetime_spend_meat', 'lifetime_spend_fish', 'lifetime_spend_hygiene',
         'lifetime_spend_videogames', 'lifetime_spend_petfood',
-        'lifetime_total_distinct_products']]
+        'lifetime_total_distinct_products']].values
 
     # 2. Initialize and train SOM
     som = MiniSom(x=som_size,
@@ -33,9 +32,9 @@ def som_cluster(path, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5)
     df['som_cluster'] = ([som.winner(X[i]) for i in range(0, len(X))])
     return df
 
-def kmeans_clustering(path, n_clusters = 9, random_state = 42):
-    data = preprocess(path)  
-    data= data[['lifetime_spend_groceries', 'lifetime_spend_electronics',
+def kmeans_clustering(df, n_clusters = 9, random_state = 42):
+    df = df.copy() 
+    data= df[['lifetime_spend_groceries', 'lifetime_spend_electronics',
         'typical_hour', 'lifetime_spend_vegetables',
         'lifetime_spend_nonalcohol_drinks', 'lifetime_spend_alcohol_drinks',
         'lifetime_spend_meat', 'lifetime_spend_fish', 'lifetime_spend_hygiene',
@@ -51,10 +50,10 @@ def kmeans_clustering(path, n_clusters = 9, random_state = 42):
 
     return data_with_clusters
 
-def hierarchical_clustering(path, n_clusters= 9, linkage= 'ward') :
+def hierarchical_clustering(df, n_clusters= 9, linkage= 'ward') :
    
-    data = preprocess(path) 
-    data= data[['lifetime_spend_groceries', 'lifetime_spend_electronics',
+    df = df.copy()
+    data= df[['lifetime_spend_groceries', 'lifetime_spend_electronics',
         'typical_hour', 'lifetime_spend_vegetables',
         'lifetime_spend_nonalcohol_drinks', 'lifetime_spend_alcohol_drinks',
         'lifetime_spend_meat', 'lifetime_spend_fish', 'lifetime_spend_hygiene',
@@ -71,8 +70,9 @@ def hierarchical_clustering(path, n_clusters= 9, linkage= 'ward') :
     return data_with_clusters
 
 def clustering(path):
-    df = som_cluster(path)
-    df[kmeans_clustering] = kmeans_clustering(path)['Kmeans_cluster']
-    df[hierarchical_clustering] = hierarchical_clustering(path)['hierarchical_cluster']
+    df = preprocess(path)
+    df = som_cluster(df,som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5)
+    df = kmeans_clustering(df, n_clusters=9, random_state=42)
+    df = hierarchical_clustering(df, n_clusters=9, linkage='ward')
 
     return df

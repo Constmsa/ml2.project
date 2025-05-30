@@ -131,22 +131,13 @@ def multidimensional_outliers(df):
 
     return df_clean
 
-def encoding(df):
-    df_encoded = df.copy()
-    # select categorical columns
-    cat_cols = df_encoded.select_dtypes(include=['object', 'category']).columns
-    # Ordinal encoding- keeps dimensionality low and keeps distance meaningfull for knn
-    encoder = OrdinalEncoder()
-    df_encoded[cat_cols] = encoder.fit_transform(df_encoded[cat_cols])
-    
-    return df_encoded
 
 def scaling(df):
     df_scaled = df.copy()
     # select numeric columns
     num_cols = df_scaled.select_dtypes(include=['number']).columns
     # Scale only numeric columns
-    scaler_ = RobustScaler()
+    scaler_ = StandardScaler()
     df_scaled[num_cols] = scaler_.fit_transform(df_scaled[num_cols])
     return df_scaled
 
@@ -157,12 +148,10 @@ def preprocess(path):
     df = missing_values(df)
     df = manual_outliers(df)
     df = multidimensional_outliers(df)
-    #df = encoding(df)
-    #df = scaling(df)
-    
+    df = scaling(df)
     return df
 
-def feature_selection(path, method, threshold=0.01, n_components=3, correlation_threshold=0.9):
+def feature_selection(path, method, threshold=0.01,correlation_threshold=0.9):
     df = preprocess(path)
     original_features = df.columns.tolist()
 
@@ -188,21 +177,6 @@ def feature_selection(path, method, threshold=0.01, n_components=3, correlation_
             result_dict[f] = f not in to_drop
         return pd.Series(result_dict, name="Keep (Correlation)")
 
-    elif method == "pca":
-        pca = PCA(n_components=n_components)
-        pca.fit(df)
-        matrix = pd.DataFrame(pca.components_.T, index=df.columns, columns=[f"PC{i+1}" for i in range(n_components)])
-        
-        # A feature is important if it contributes highly to a PC
-        importance_threshold = 0.3 
-        important_features = set()
-
-        for col in matrix.columns:
-            important_features.update(matrix[matrix[col].abs() >= importance_threshold].index.tolist())
-
-        for f in df.columns:
-            result_dict[f] = f in important_features
-        return pd.Series(result_dict, name="Important in PCA")
-
+   
     else:
-        raise ValueError("Choose method from 'variance', 'correlation', or 'pca'")
+        raise ValueError("Choose method from 'variance', 'correlation'.")

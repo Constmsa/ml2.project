@@ -73,6 +73,6 @@ def clustering(path):
     df = preprocess(path)
     df['som_cluster'] = som_cluster(df,som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5)['som_cluster']
     df['Kmeans_cluster'] = kmeans_clustering(df, n_clusters=9, random_state=42)['Kmeans_cluster']
-    df['hierachical_cluster'] = hierarchical_clustering(df, n_clusters=9, linkage='ward')['hierarchical_cluster']
+    df['hierarchical_cluster'] = hierarchical_clustering(df, n_clusters=9, linkage='ward')['hierarchical_cluster']
 
     return df

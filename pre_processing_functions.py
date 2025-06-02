@@ -68,7 +68,7 @@ def missing_values(df, n_neighbors=5):
     num_cols = df.select_dtypes(include=['number']).columns
     cat_cols = df.select_dtypes(include=['object', 'category']).columns
 
-    # Use simple imputer to impute numeric columns by median
+    # Use simple imputer to impute numeric columns by KNN
     if len(num_cols) > 0:
         num_imputer = KNNImputer(n_neighbors=n_neighbors)
         handled_missing[num_cols] = num_imputer.fit_transform(df[num_cols])

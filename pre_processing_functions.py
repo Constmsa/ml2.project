@@ -151,6 +151,14 @@ def preprocess(path):
     df = scaling(df)
     return df
 
+def preprocess_semscalling(path):
+    df = load_info(path)
+    df = feature_transformation(df)
+    df = missing_values(df)
+    df = manual_outliers(df)
+    df = multidimensional_outliers(df)
+    return df
+
 def feature_selection(path, method, threshold=0.01,correlation_threshold=0.9):
     df = preprocess(path)
     original_features = df.columns.tolist()

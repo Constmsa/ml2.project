@@ -2,9 +2,11 @@
 import pandas as pd
 from minisom import MiniSom
 import numpy as np
+import matplotlib.pyplot as plt
 from pre_processing_functions import preprocess
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import silhouette_samples, silhouette_score
 
 
 def som_cluster(df, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
@@ -76,3 +78,35 @@ def clustering(path):
     df['hierarchical_cluster'] = hierarchical_clustering(df, n_clusters=9, linkage='ward')['hierarchical_cluster']
 
     return df
+
+def plot_silhouette(df, feature_cols, cluster_col):
+    X = df[feature_cols].values
+    labels = df[cluster_col].values
+    n_clusters = len(np.unique(labels))
+
+    silhouette_vals = silhouette_samples(X, labels)
+    silhouette_avg = silhouette_score(X, labels)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    y_lower = 10
+
+    for i in np.unique(labels):
+        ith_cluster_vals = silhouette_vals[labels == i]
+        ith_cluster_vals.sort()
+
+        size_cluster_i = ith_cluster_vals.shape[0]
+        y_upper = y_lower + size_cluster_i
+
+        color = plt.cm.nipy_spectral(float(i) / n_clusters)
+        ax.fill_betweenx(np.arange(y_lower, y_upper),
+                         0, ith_cluster_vals,
+                         facecolor=color, edgecolor=color, alpha=0.7)
+
+        ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+        y_lower = y_upper + 10
+
+    ax.axvline(x=silhouette_avg, color="red", linestyle="--")
+    ax.set_xlabel("Coeficiente de Silhueta")
+    ax.set_ylabel("Label do Cluster")
+    ax.set_title(f"Silhouette Plot - {cluster_col}")
+    plt.show()

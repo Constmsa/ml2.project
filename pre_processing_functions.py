@@ -62,7 +62,7 @@ def feature_transformation(customer_info):
     customer_info[['customer_name_clean', 'customer_educlevel']] = customer_info['customer_name'].apply(split_name)
     customer_info['customer_name'] = customer_info['customer_name_clean']
     customer_info.drop(columns='customer_name_clean', inplace=True)
-    customer_info['customer_educlevel'].apply(lambda x: 1 if x in education_titles else 0)
+    customer_info['customer_educlevel'] = customer_info['customer_educlevel'].isin(education_titles).astype(int)
 
     #drop column Unnamed: 0, customer_birthdate, and customer_name
     customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate', 'customer_name'])
@@ -142,11 +142,12 @@ def multidimensional_outliers(df):
 
 def scaling(df):
     df_scaled = df.copy()
-    # select numeric columns
+    # select numeric columns excluding binary columns
     num_cols = df_scaled.select_dtypes(include=['number']).columns
+    non_binary_num_cols = [col for col in num_cols if df_scaled[col].nunique() > 2]
     # Scale only numeric columns
     scaler_ = StandardScaler()
-    df_scaled[num_cols] = scaler_.fit_transform(df_scaled[num_cols])
+    df_scaled[non_binary_num_cols] = scaler_.fit_transform(df_scaled[non_binary_num_cols])
     return df_scaled
 
 

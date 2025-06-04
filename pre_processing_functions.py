@@ -30,6 +30,9 @@ def feature_transformation(customer_info):
     current_year = datetime.now().year
     customer_info['customer_age'] = current_year - customer_info['customer_birthdate'].dt.year
 
+    #joining kids and teens columns
+    customer_info["children"] = customer_info["kids_home"] + customer_info["teens_home"]
+    
     #Loyalty card flag
     customer_info['loyalty_card_number'] = customer_info['loyalty_card_number'].notna().astype(int)
 

@@ -30,9 +30,10 @@ def feature_transformation(customer_info):
     current_year = datetime.now().year
     customer_info['customer_age'] = current_year - customer_info['customer_birthdate'].dt.year
     
-    #joining kids and teens columns
+    #joining kids and teens columns, turning children into binary
     customer_info["children"] = customer_info["kids_home"] + customer_info["teens_home"]
-    
+    customer_info["has_children"] = customer_info["children"].apply(lambda x: 1 if x > 0 else 0)
+
     #Loyalty card flag
     customer_info['loyalty_card_number'] = customer_info['loyalty_card_number'].notna().astype(int)
 
@@ -42,7 +43,7 @@ def feature_transformation(customer_info):
     #percentage
     customer_info['percentage_of_products_bought_promotion'] = customer_info['percentage_of_products_bought_promotion']*100
 
-    #Education splitting 
+    #Education splitting and turning into binary
     education_titles = ['Phd.', 'Msc.', 'Bsc.', 'MBA.']
 
     def split_name(name):
@@ -58,6 +59,7 @@ def feature_transformation(customer_info):
     customer_info[['customer_name_clean', 'customer_educlevel']] = customer_info['customer_name'].apply(split_name)
     customer_info['customer_name'] = customer_info['customer_name_clean']
     customer_info.drop(columns='customer_name_clean', inplace=True)
+    customer_info['customer_educlevel'].apply(lambda x: 1 if x in education_titles else 0)
 
     #drop column Unnamed: 0, customer_birthdate
     customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate'])

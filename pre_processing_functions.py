@@ -29,6 +29,10 @@ def feature_transformation(customer_info):
 
     current_year = datetime.now().year
     customer_info['customer_age'] = current_year - customer_info['customer_birthdate'].dt.year
+    
+    #joining kids and teens columns, turning children into binary
+    customer_info["children"] = customer_info["kids_home"] + customer_info["teens_home"]
+    customer_info["has_children"] = customer_info["children"].apply(lambda x: 1 if x > 0 else 0)
 
     #Loyalty card flag
     customer_info['loyalty_card_number'] = customer_info['loyalty_card_number'].notna().astype(int)
@@ -36,10 +40,13 @@ def feature_transformation(customer_info):
     #Years active
     customer_info['years_active'] = 2025 - customer_info['year_first_transaction']
 
+    #typical time period into binary 
+    customer_info['typical_time_period'] = customer_info['typical_hour'].apply(lambda x: 1 if x < 12 else 1 )
+    
     #percentage
     customer_info['percentage_of_products_bought_promotion'] = customer_info['percentage_of_products_bought_promotion']*100
 
-    #Education splitting 
+    #Education splitting and turning into binary
     education_titles = ['Phd.', 'Msc.', 'Bsc.', 'MBA.']
 
     def split_name(name):
@@ -55,9 +62,10 @@ def feature_transformation(customer_info):
     customer_info[['customer_name_clean', 'customer_educlevel']] = customer_info['customer_name'].apply(split_name)
     customer_info['customer_name'] = customer_info['customer_name_clean']
     customer_info.drop(columns='customer_name_clean', inplace=True)
+    customer_info['customer_educlevel'] = customer_info['customer_educlevel'].isin(education_titles).astype(int)
 
-    #drop column Unnamed: 0, customer_birthdate
-    customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate'])
+    #drop column Unnamed: 0, customer_birthdate, and customer_name
+    customer_info = customer_info.drop(columns=['Unnamed: 0', 'customer_birthdate', 'customer_name'])
     
     return customer_info
 
@@ -134,11 +142,12 @@ def multidimensional_outliers(df):
 
 def scaling(df):
     df_scaled = df.copy()
-    # select numeric columns
+    # select numeric columns excluding binary columns
     num_cols = df_scaled.select_dtypes(include=['number']).columns
+    non_binary_num_cols = [col for col in num_cols if df_scaled[col].nunique() > 2]
     # Scale only numeric columns
     scaler_ = StandardScaler()
-    df_scaled[num_cols] = scaler_.fit_transform(df_scaled[num_cols])
+    df_scaled[non_binary_num_cols] = scaler_.fit_transform(df_scaled[non_binary_num_cols])
     return df_scaled
 
 

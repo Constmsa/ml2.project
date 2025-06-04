@@ -26,8 +26,8 @@ def som_cluster(df, som_size=3, iterations=5000, sigma=1.0, learning_rate=0.5):
                   sigma=sigma, 
                   learning_rate=learning_rate)
     
-    som.random_weights_init(X)
     np.random.seed(42)
+    som.random_weights_init(X)
     som.train(X, num_iteration=iterations, verbose=True)
 
     # 3. Assign cluster to each data point

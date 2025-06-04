@@ -1,6 +1,8 @@
 
 import pandas as pd
 from minisom import MiniSom
+import umap
+import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 from pre_processing_functions import preprocess
@@ -110,3 +112,56 @@ def plot_silhouette(df, feature_cols, cluster_col):
     ax.set_ylabel("Label do Cluster")
     ax.set_title(f"Silhouette Plot - {cluster_col}")
     plt.show()
+
+    def umap_som(df, features):
+        umap_object = umap.UMAP(n_neighbors=5, random_state=2)
+        umap_embedding = umap_object.fit_transform(df[features])
+        
+        df['umap_1'] = umap_embedding[:, 0]
+        df['umap_2'] = umap_embedding[:, 1]
+        ## Plot UMAP colored by SOM clusters
+        plt.figure(figsize=(10, 7))
+        sns.scatterplot(x='umap_1', y='umap_2', data=df, hue=df['som_cluster'].astype(str),
+                        palette='tab20', s=60, alpha=0.8)
+        plt.title("UMAP clusters -  SOM Clustering")
+        plt.xlabel("UMAP-1")
+        plt.ylabel("UMAP-2")
+        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title='SOM Cluster')
+        plt.tight_layout()
+        plt.show()
+
+    def umap_kmeans(df, n_neighbors=5, min_dist=0.01):
+
+        # Select only numeric columns (exclude 'cluster' since it is our 'target')
+        features = df.select_dtypes(include='number').drop(columns=['Kmeans_cluster'], errors='ignore')
+        features_scaled = features.values
+    
+        reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist, random_state=42)
+        embedding = reducer.fit_transform(features_scaled)
+    
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=df['Kmeans_cluster'], palette='tab10', s=70)
+        plt.title("UMAP clusters - Kmeans")
+        plt.xlabel("UMAP 1")
+        plt.ylabel("UMAP 2")
+        plt.legend(title="Cluster")
+        plt.tight_layout()
+        plt.show()
+
+    def umap_hierarchical(df, n_neighbors=5, min_dist=0.01):
+
+        # Select only numeric columns (exclude'cluster' since it is our 'target')
+        features = df.select_dtypes(include='number').drop(columns=['hierarchical_cluster'], errors='ignore')
+        features_scaled = features.values
+
+        reduce = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist, random_state=42)
+        embedding = reduce.fit_transform(features_scaled)
+
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(x=embedding[:, 0], y=embedding[:, 1], hue=df['hierarchical_cluster'], palette='tab10', s=70)
+        plt.title("UMAP clusters - Hierarchical Clustering")
+        plt.xlabel("UMAP 1")
+        plt.ylabel("UMAP 2")
+        plt.legend(title="Cluster")
+        plt.tight_layout()
+        plt.show()

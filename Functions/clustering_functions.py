@@ -5,7 +5,7 @@ import umap
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from pre_processing_functions import preprocess
+from Functions.pre_processing_functions import preprocess
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_samples, silhouette_score

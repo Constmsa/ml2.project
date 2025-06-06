@@ -1,7 +1,18 @@
 from datetime import datetime
+<<<<<<< HEAD
+from sklearn.preprocessing import RobustScaler  
+from sklearn.impute import KNNImputer, SimpleImputer 
+from sklearn.impute import SimpleImputer 
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import OrdinalEncoder
+=======
 from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
 from sklearn.feature_selection import VarianceThreshold
+>>>>>>> main
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
@@ -71,7 +82,11 @@ def missing_values(df, n_neighbors=5):
     num_cols = df.select_dtypes(include=['number']).columns
     cat_cols = df.select_dtypes(include=['object', 'category']).columns
 
+<<<<<<< HEAD
+    # Use simple imputer to impute numeric columns by knn
+=======
     # Use simple imputer to impute numeric columns by KNN
+>>>>>>> main
     if len(num_cols) > 0:
         num_imputer = KNNImputer(n_neighbors=n_neighbors)
         handled_missing[num_cols] = num_imputer.fit_transform(df[num_cols])
@@ -155,6 +170,8 @@ def preprocess(path):
     df = scaling(df)
     return df
 
+<<<<<<< HEAD
+=======
 def preprocess_semscalling(path):
     df = load_info(path)
     df = feature_transformation(df)
@@ -163,6 +180,7 @@ def preprocess_semscalling(path):
     df = multidimensional_outliers(df)
     return df
 
+>>>>>>> main
 def feature_selection(path, method, threshold=0.01,correlation_threshold=0.9):
     df = preprocess(path)
     original_features = df.columns.tolist()

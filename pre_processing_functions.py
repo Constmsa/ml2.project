@@ -35,9 +35,6 @@ def feature_transformation(customer_info):
     #Years active
     customer_info['years_active'] = 2025 - customer_info['year_first_transaction']
 
-    #typical time period into binary 
-    customer_info['typical_time_period'] = customer_info['typical_hour'].apply(lambda x: 1 if x < 12 else 1 )
-    
     #percentage
     customer_info['percentage_of_products_bought_promotion'] = customer_info['percentage_of_products_bought_promotion']*100
 

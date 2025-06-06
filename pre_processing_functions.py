@@ -1,12 +1,7 @@
 from datetime import datetime
-from sklearn.preprocessing import RobustScaler  
-from sklearn.impute import KNNImputer, SimpleImputer 
-from sklearn.impute import SimpleImputer 
+from sklearn.impute import KNNImputer, SimpleImputer
 import pandas as pd
-import numpy as np
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import OrdinalEncoder
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 

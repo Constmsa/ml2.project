@@ -1,3 +1,8 @@
+#Group 60, Constança Sá (20231632), Matilde Panarra (20231667), Margarida Cruz (20221929)
+
+
+
+
 # Machine Learning II Class - Data Science Degree - NOVA IMS
 
 ## Customer Segmentation: A Key to Unlocking Business Growth and Success
